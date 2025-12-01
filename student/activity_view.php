@@ -47,6 +47,40 @@ if (!$assignment) {
     die('Activity not found or access denied.');
 }
 
+// Handle mark as completed
+$success_message = '';
+$error_message = '';
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    if (isset($_POST['mark_completed'])) {
+        // Update assignment status to completed
+        $completed_status = STATUS_COMPLETED;
+        $now = date('Y-m-d H:i:s');
+        
+        $update_stmt = $mysqli->prepare("
+            UPDATE activity_assignments 
+            SET status = ?, completed_at = ? 
+            WHERE id = ? AND student_id = ?
+        ");
+        
+        if ($update_stmt === false) {
+            $error_message = 'Database error: ' . $mysqli->error;
+        } else {
+            $update_stmt->bind_param("ssii", $completed_status, $now, $assignment_id, $student['id']);
+            
+            if ($update_stmt->execute()) {
+                $success_message = 'Activity marked as completed!';
+                // Refresh assignment data
+                $assignment['status'] = STATUS_COMPLETED;
+                $assignment['completed_at'] = $now;
+            } else {
+                $error_message = 'Error marking activity as completed: ' . $update_stmt->error;
+            }
+            $update_stmt->close();
+        }
+    }
+}
+
 // Handle quiz attempt redirect
 if ($assignment['activity_type'] === ACTIVITY_TYPE_QUIZ) {
     if ($assignment['status'] === STATUS_COMPLETED) {
@@ -65,6 +99,20 @@ include '../includes/nav.php';
 ?>
 
 <div class="container mt-4">
+    <?php if ($success_message): ?>
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <?php echo htmlspecialchars($success_message); ?>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    <?php endif; ?>
+
+    <?php if ($error_message): ?>
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <?php echo htmlspecialchars($error_message); ?>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    <?php endif; ?>
+
     <div class="row">
         <div class="col-md-8">
             <h2><?php echo htmlspecialchars($assignment['title']); ?></h2>

@@ -87,6 +87,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             );
 
             if ($stmt->execute()) {
+                $activity_id = $stmt->insert_id;
+                
+                // Automatically assign activity to all students in the class if class_id is provided
+                if ($class_id > 0) {
+                    $assign_stmt = $mysqli->prepare("
+                        INSERT INTO activity_assignments (activity_id, student_id, status)
+                        SELECT ?, id, ?
+                        FROM students
+                        WHERE class_id = ?
+                    ");
+                    $status_not_started = STATUS_NOT_STARTED;
+                    $assign_stmt->bind_param("isi", $activity_id, $status_not_started, $class_id);
+                    $assign_stmt->execute();
+                    $assign_stmt->close();
+                }
+                
                 $success = 'Activity created successfully!';
                 $_POST = [];
             } else {

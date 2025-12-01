@@ -198,7 +198,7 @@ $page_title = 'Login';
         </form>
 
         <div style="text-align: center; margin-top: 20px; font-size: 14px;">
-            Don't have an account? <a href="register.php" style="color: #667eea; font-weight: 600; text-decoration: none;">Register as Student</a>
+            Don't have an account? <a href="signup.php" style="color: #667eea; font-weight: 600; text-decoration: none;">Sign Up</a>
         </div>
     </div>
 

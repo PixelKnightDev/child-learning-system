@@ -28,14 +28,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $max_marks = intval($_POST['max_marks'] ?? 100);
     $file_path = null;
 
-    // Validation
-    if (empty($title) || empty($activity_type)) {
-        $error = 'Title and type are required.';
-    } elseif (!in_array($activity_type, [ACTIVITY_TYPE_PDF, ACTIVITY_TYPE_QUIZ])) {
-        $error = 'Invalid activity type.';
-    } elseif ($activity_type === ACTIVITY_TYPE_PDF && empty($_FILES['pdf_file']['name'])) {
-        $error = 'PDF file is required for PDF activities.';
-    } else {
+     // Validation
+     if (empty($title) || empty($activity_type)) {
+         $error = 'Title and type are required.';
+     } elseif (!in_array($activity_type, [ACTIVITY_TYPE_PDF, ACTIVITY_TYPE_QUIZ])) {
+         $error = 'Invalid activity type.';
+     } elseif ($class_id <= 0) {
+         $error = 'You must select a class to assign this activity to students.';
+     } elseif ($activity_type === ACTIVITY_TYPE_PDF && empty($_FILES['pdf_file']['name'])) {
+         $error = 'PDF file is required for PDF activities.';
+     } else {
         // Handle file upload for PDF
         if ($activity_type === ACTIVITY_TYPE_PDF && !empty($_FILES['pdf_file']['name'])) {
             $file = $_FILES['pdf_file'];
@@ -88,8 +90,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             if ($stmt->execute()) {
                 $activity_id = $stmt->insert_id;
+                $assigned_count = 0;
                 
-                // Automatically assign activity to all students in the class if class_id is provided
+                // Automatically assign activity to all students in the class
                 if ($class_id > 0) {
                     $assign_stmt = $mysqli->prepare("
                         INSERT INTO activity_assignments (activity_id, student_id, status)
@@ -97,14 +100,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         FROM students
                         WHERE class_id = ?
                     ");
-                    $status_not_started = STATUS_NOT_STARTED;
-                    $assign_stmt->bind_param("isi", $activity_id, $status_not_started, $class_id);
-                    $assign_stmt->execute();
-                    $assign_stmt->close();
+                    if ($assign_stmt === false) {
+                        $error = 'Error preparing assignment statement: ' . $mysqli->error;
+                    } else {
+                        $status_not_started = STATUS_NOT_STARTED;
+                        $assign_stmt->bind_param("isi", $activity_id, $status_not_started, $class_id);
+                        
+                        if (!$assign_stmt->execute()) {
+                            $error = 'Error assigning activity to students: ' . $assign_stmt->error;
+                        } else {
+                            $assigned_count = $assign_stmt->affected_rows;
+                        }
+                        $assign_stmt->close();
+                    }
                 }
                 
-                $success = 'Activity created successfully!';
-                $_POST = [];
+                if (empty($error)) {
+                    $success = "Activity created successfully and assigned to $assigned_count student(s)!";
+                    $_POST = [];
+                }
             } else {
                 $error = 'Error creating activity. Please try again.';
             }
@@ -183,16 +197,17 @@ include '../includes/nav.php';
                         </div>
 
                         <div class="mb-3">
-                            <label for="class_id" class="form-label">Assign to Class (Optional)</label>
-                            <select class="form-control" id="class_id" name="class_id">
-                                <option value="">No specific class</option>
-                                <?php foreach ($classes as $class): ?>
-                                    <option value="<?php echo $class['id']; ?>" <?php echo (intval($_POST['class_id'] ?? 0) === $class['id']) ? 'selected' : ''; ?>>
-                                        <?php echo htmlspecialchars($class['class_name']); ?>
-                                    </option>
-                                <?php endforeach; ?>
-                            </select>
-                        </div>
+                             <label for="class_id" class="form-label">Assign to Class <span class="text-danger">*</span></label>
+                             <select class="form-control" id="class_id" name="class_id" required>
+                                 <option value="">Select a class...</option>
+                                 <?php foreach ($classes as $class): ?>
+                                     <option value="<?php echo $class['id']; ?>" <?php echo (intval($_POST['class_id'] ?? 0) === $class['id']) ? 'selected' : ''; ?>>
+                                         <?php echo htmlspecialchars($class['class_name']); ?>
+                                     </option>
+                                 <?php endforeach; ?>
+                             </select>
+                             <small class="text-muted d-block mt-1">Select which class this activity will be assigned to. All students in the selected class will see this activity.</small>
+                         </div>
 
                         <div class="mb-3">
                             <label for="due_date" class="form-label">Due Date (Optional)</label>

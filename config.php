@@ -31,7 +31,7 @@ define('INCLUDES_DIR', APP_ROOT . '/includes/');
 define('SITE_URL', 'http://localhost/child-learning-system/');
 
 // Application name
-define('APP_NAME', 'Child Learning & Progress Management System');
+define('APP_NAME', 'Student Learning & Progress Management System');
 
 // User roles
 define('ROLE_ADMIN', 'admin');

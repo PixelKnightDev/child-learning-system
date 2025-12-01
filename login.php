@@ -91,7 +91,7 @@ $page_title = 'Login';
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?php echo APP_NAME; ?> - Login</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="<?php echo SITE_URL; ?>css/bootstrap.min.css" rel="stylesheet">
     <style>
         body {
             background: linear-gradient(135deg, #ffffffff 0%, #ffffffff 100%);
@@ -126,13 +126,13 @@ $page_title = 'Login';
             box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
         }
         .btn-login {
-            background: linear-gradient(135deg, #002fffff 0%, #8000ffff 100%);
+            background: linear-gradient(135deg, #764ba2 0%, #764ba2 100%);
             border: none;
             padding: 10px;
             font-weight: 600;
         }
         .btn-login:hover {
-            background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+            background: linear-gradient(135deg, #002fffff 0%, #002fffff 100%);
         }
         .alert {
             margin-bottom: 20px;
@@ -202,6 +202,6 @@ $page_title = 'Login';
         </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="<?php echo SITE_URL; ?>js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

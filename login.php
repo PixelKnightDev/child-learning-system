@@ -196,6 +196,10 @@ $page_title = 'Login';
 
             <button type="submit" class="btn btn-login btn-primary w-100">Login</button>
         </form>
+
+        <div style="text-align: center; margin-top: 20px; font-size: 14px;">
+            Don't have an account? <a href="register.php" style="color: #667eea; font-weight: 600; text-decoration: none;">Register as Student</a>
+        </div>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
